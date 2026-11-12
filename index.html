@@ -1,1 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theater48 News Post Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { poppins: ['Poppins', 'sans-serif'] },
+          colors: { brand: '#4262b2', brandDark: '#1b3570' }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    .pattern-shards { background-color: #f7f9fd; position: relative; }
+    input[type=range] { accent-color: #4262b2; }
+    .aspect-instagram { aspect-ratio: 1 / 1; max-width: 530px; }
+    .aspect-tiktok { aspect-ratio: 2494 / 3324; max-width: 440px; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased select-none">
 
+  <!-- Format Modal -->
+  <div id="formatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 transition-all duration-300">
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative text-center">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#4262b2] to-blue-400 flex items-center justify-center mx-auto mb-4 text-2xl font-black text-white shadow-xl shadow-blue-500/20">O+</div>
+      <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight mb-1">PILIH FORMAT KANVAS</h2>
+      <p class="text-slate-400 text-xs sm:text-sm mb-6">Pilih format postingan yang ingin dibuat hari ini</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+        <button id="selectModalIg" class="group p-5 bg-slate-900/90 hover:bg-slate-800/90 border-2 border-slate-700 hover:border-[#4262b2] rounded-2xl flex flex-col items-center justify-center text-center transition-all cursor-pointer">
+          <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-amber-500 flex items-center justify-center text-white text-3xl mb-3 shadow-md group-hover:scale-105 transition-transform"><i class="ph-bold ph-instagram-logo"></i></div>
+          <span class="text-base font-black text-white">Instagram Feed</span>
+          <span class="text-xs font-semibold text-blue-400 mt-0.5">1080 x 1080 px</span>
+          <span class="text-[11px] text-slate-400 mt-2 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">Rasio Persegi (1:1)</span>
+        </button>
+        <button id="selectModalTiktok" class="group p-5 bg-slate-900/90 hover:bg-slate-800/90 border-2 border-slate-700 hover:border-[#4262b2] rounded-2xl flex flex-col items-center justify-center text-center transition-all cursor-pointer">
+          <div class="w-16 h-20 rounded-xl bg-gradient-to-b from-cyan-400 via-slate-900 to-rose-500 flex items-center justify-center text-white text-3xl mb-3 shadow-md group-hover:scale-105 transition-transform border border-slate-700"><i class="ph-bold ph-tiktok-logo"></i></div>
+          <span class="text-base font-black text-white">TikTok Photo</span>
+          <span class="text-xs font-semibold text-cyan-400 mt-0.5">2494 x 3324 px</span>
+          <span class="text-[11px] text-slate-400 mt-2 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">Portrait HD (3:4)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 sm:px-6 py-3 flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#4262b2] to-blue-400 flex items-center justify-center font-black text-lg text-white shadow-lg shadow-blue-500/20">O+</div>
+      <h1 class="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2">THEATER48 <span class="text-[10px] sm:text-[11px] bg-blue-600/30 text-blue-300 font-semibold px-2 py-0.5 rounded-full border border-blue-500/30">Auto News Gen</span></h1>
+    </div>
+    <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
+      <button id="btnSwitchIg" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-[#4262b2] text-white shadow-sm cursor-pointer"><i class="ph-bold ph-instagram-logo"></i><span>Instagram (1:1)</span></button>
+      <button id="btnSwitchTiktok" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer"><i class="ph-bold ph-tiktok-logo"></i><span>TikTok (3:4)</span></button>
+    </div>
+    <button id="downloadBtn" class="flex items-center gap-2 bg-[#4262b2] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer">
+      <i class="ph-bold ph-download-simple text-base"></i><span id="downloadBtnText">Download PNG (1080p)</span>
+    </button>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- Controls Sidebar -->
+    <div class="lg:col-span-5 flex flex-col gap-4 order-2 lg:order-1">
+      
+      <!-- Media Panel -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5"><i class="ph-bold ph-image text-[#4262b2]"></i> Gambar Latar & Posisi</label>
+          <button id="resetTransformBtn" class="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"><i class="ph-bold ph-arrows-counter-clockwise"></i> Reset Posisi</button>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="grid grid-cols-2 gap-2">
+            <label class="border-2 border-dashed border-slate-700 hover:border-[#4262b2] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer bg-slate-900/50 hover:bg-slate-800/45 transition-colors group">
+              <input type="file" id="mediaInput" accept="image/*,video/*" class="hidden">
+              <i class="ph-bold ph-upload-simple text-xl text-slate-400 group-hover:text-blue-400 mb-0.5 transition-colors"></i>
+              <span class="text-[11px] font-semibold text-slate-300 group-hover:text-white" id="uploadLabelText">Pilih Foto / Video</span>
+            </label>
+            <div class="flex flex-col justify-center gap-1 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 font-semibold">Atau Tempel URL:</span>
+              <div class="flex gap-1">
+                <input type="text" id="imageUrlInput" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-white focus:outline-none focus:border-blue-500">
+                <button id="applyUrlBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded-lg text-xs font-bold"><i class="ph-bold ph-arrow-right"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Controls -->
+          <div id="videoControlsPanel" class="hidden bg-slate-900/90 border border-blue-900/60 rounded-xl p-3 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-300 flex items-center gap-1.5"><i class="ph-bold ph-video text-base"></i> Kontrol Video (1.02x)</span>
+              <span id="videoTimeDisplay" class="font-mono text-[11px] text-slate-400 font-semibold">00:00 / 00:00</span>
+            </div>
+            <input type="range" id="videoTimeline" min="0" max="100" value="0" step="0.1" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-2">
+                <button id="btnPlayPause" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"><i class="ph-bold ph-play" id="playIcon"></i> Play</button>
+                <button id="btnMuteVideo" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs cursor-pointer"><i class="ph-bold ph-speaker-high" id="muteIcon"></i></button>
+              </div>
+              <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 text-[11px]">
+                <input type="checkbox" id="toggleAutoFade" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
+                <span>Auto-fade 5s</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-1">
+            <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Zoom Gambar</span><span id="zoomVal" class="font-mono text-blue-400 font-semibold">100%</span></div>
+            <input type="range" id="zoomInput" min="20" max="350" value="100" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <!-- Text & JKT48 Lineup Panel -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 shadow-sm space-y-3.5">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1"><i class="ph-bold ph-tag text-[#4262b2]"></i> Tag Berita</label>
+            <input type="text" id="tagInput" value="JKT48" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-[#4262b2]">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">Warna Badge</label>
+            <div class="flex items-center gap-2">
+              <input type="color" id="primaryColorInput" value="#4262b2" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+              <input type="text" id="primaryColorHex" value="#4262b2" class="w-full uppercase font-mono text-xs bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-slate-200">
+            </div>
+          </div>
+        </div>
+
+        <!-- JKT48 LINEUP MEMBER FEATURE -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="ph-bold ph-users text-[#4262b2]"></i> Lineup Member JKT48
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="toggleLineup" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
+              <span id="labelLineupStatus" class="text-[11px] font-semibold text-blue-300">Tampilkan</span>
+            </label>
+          </div>
+          <input type="text" id="lineupInput" value="Gita, Freya, Gracia, Marsha, Christy" placeholder="Pisahkan dengan koma..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#4262b2]">
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5 cursor-pointer" for="toggleBlueBg">
+            <i class="ph-bold ph-paint-bucket text-[#4262b2]"></i> Latar Biru Bawah (#4262b2)
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="toggleBlueBg" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
+            <span id="labelBlueBgStatus" class="text-[11px] font-semibold text-blue-300">Aktif</span>
+          </label>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i class="ph-bold ph-camera text-[#4262b2]"></i> Sumber / Credit</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="toggleCredit" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0"><span class="text-[11px] font-semibold text-blue-300">Tampilkan</span></label>
+          </div>
+          <input type="text" id="creditInput" value="Sumber: Twitter/X" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-[#4262b2]">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i class="ph-bold ph-text-t text-[#4262b2]"></i> Teks Caption / Headline</label>
+            <span class="text-[11px] font-semibold text-blue-300 bg-slate-900 border border-slate-700 px-2 py-0.5 rounded-lg">Auto-sizing</span>
+          </div>
+          <textarea id="headlineInput" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-[#4262b2] leading-relaxed">Tidak Hanya Anindya Kini Aralie JKT48 Juga Perlihatkan Pose Tiga Jari</textarea>
+          <div class="pt-2">
+            <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Ukuran Font:</span><span id="manualFontSizeVal" class="font-mono text-blue-400">24px</span></div>
+            <input type="range" id="manualFontSizeInput" min="16" max="38" value="24" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Jarak Baris</label>
+            <select id="lineHeightSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+              <option value="1.05">Sangat Rapat (1.05)</option>
+              <option value="1.14" selected>Normal (1.14)</option>
+              <option value="1.25">Sedang (1.25)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Rata Teks</label>
+            <select id="textAlignSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+              <option value="left" selected>Rata Kiri</option>
+              <option value="center">Rata Tengah</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800">
+          <label class="block text-[11px] font-bold text-slate-400 mb-1">Footer Teks Kanan</label>
+          <input type="text" id="footerCta" value="theater48.my.id" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200">
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Preview Canvas -->
+    <div class="lg:col-span-7 flex flex-col items-center order-1 lg:order-2">
+      <div class="w-full flex items-center justify-between mb-2 px-1 max-w-[530px]">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-400 flex items-center gap-1.5"><i class="ph-bold ph-eye text-blue-400"></i> Canvas Preview</span>
+          <span id="canvasFormatBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-950 text-blue-300 border border-blue-800">1080 x 1080 (1:1)</span>
+        </div>
+        <button id="resetSampleBtn" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"><i class="ph-bold ph-arrow-counter-clockwise"></i> Reset</button>
+      </div>
+
+      <div id="previewCardFrame" class="w-full aspect-instagram flex items-center justify-center bg-slate-950/80 border border-slate-800 rounded-2xl p-2 sm:p-3 shadow-2xl transition-all duration-300">
+        <div id="captureArea" class="relative w-full h-full overflow-hidden bg-slate-800 shadow-2xl flex flex-col justify-end touch-none select-none">
+          
+          <div id="bgLayerContainer" class="absolute inset-0 z-0 overflow-hidden bg-[#192b52]">
+            <div id="imageTransformBox" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-move origin-center group touch-none" style="width: 100%; height: 100%;">
+              <img id="bgPreviewImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80" alt="Background" draggable="false" class="w-full h-full object-cover select-none pointer-events-none">
+              <video id="bgPreviewVideo" playsinline muted loop crossorigin="anonymous" class="hidden w-full h-full object-cover select-none pointer-events-none"></video>
+              <div id="transformBorder" class="absolute inset-0 border-2 border-dashed border-blue-400/80 pointer-events-none"></div>
+              <div class="corner-handle absolute -top-2.5 -left-2.5 w-5 h-5 bg-white border-2 border-[#4262b2] rounded-full shadow-lg cursor-nwse-resize z-30" data-handle="top-left"></div>
+              <div class="corner-handle absolute -top-2.5 -right-2.5 w-5 h-5 bg-white border-2 border-[#4262b2] rounded-full shadow-lg cursor-nesw-resize z-30" data-handle="top-right"></div>
+              <div class="corner-handle absolute -bottom-2.5 -left-2.5 w-5 h-5 bg-white border-2 border-[#4262b2] rounded-full shadow-lg cursor-nesw-resize z-30" data-handle="bottom-left"></div>
+              <div class="corner-handle absolute -bottom-2.5 -right-2.5 w-5 h-5 bg-white border-2 border-[#4262b2] rounded-full shadow-lg cursor-nwse-resize z-30" data-handle="bottom-right"></div>
+            </div>
+          </div>
+
+          <div id="gradientOverlay" class="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-transparent via-transparent via-45% to-[#4262b2] opacity-90 transition-opacity duration-700"></div>
+          <div class="absolute bottom-0 left-0 right-0 h-[38%] z-10 pointer-events-none bg-[#4262b2] transition-opacity duration-700" id="solidBottomBg"></div>
+
+          <div id="newsOverlayGroup" class="relative z-20 w-full px-5 pb-5 sm:px-7 sm:pb-6 flex flex-col justify-end pointer-events-none">
+            <div id="fadingCaptionSection" class="w-full flex flex-col justify-end pointer-events-auto transition-opacity duration-700">
+              
+              <!-- Meta Badges & JKT48 Lineup Row -->
+              <div id="metaRowContainer" class="w-full mb-1.5 flex items-center justify-between">
+                <span id="previewTag" class="inline-block bg-white text-[#4262b2] font-black tracking-tight text-xs sm:text-[13px] px-3.5 py-0.5 sm:py-1 rounded-md shadow-md border border-white/80 uppercase">JKT48</span>
+                <div id="previewCreditBadge" class="bg-black/60 backdrop-blur-sm border border-white/30 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-0.5 sm:py-1 rounded-md shadow-md flex items-center gap-1.5 uppercase tracking-wide">
+                  <i class="ph-bold ph-camera text-[11px] text-blue-300"></i>
+                  <span id="previewCreditText">Sumber: Twitter/X</span>
+                </div>
+              </div>
+
+              <!-- Lineup Member Row Preview -->
+              <div id="previewLineupContainer" class="w-full mb-1.5 flex flex-wrap gap-1.5 items-center">
+                <!-- Lineup badges injected via JS -->
+              </div>
+
+              <!-- Caption Box -->
+              <div id="captionCardBox" class="w-full rounded-none border-[2.5px] border-[#111827] shadow-2xl overflow-hidden pattern-shards relative px-5 py-4 sm:px-7 sm:py-5 h-auto flex items-center bg-[#f7f9fd]">
+                <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-[0.22]" preserveAspectRatio="none" viewBox="0 0 800 240" fill="none">
+                  <polygon points="0,0 85,240 160,0" fill="#4262b2" opacity="0.4" />
+                  <polygon points="120,240 210,0 290,240" fill="#203a7d" opacity="0.35" />
+                  <polygon points="260,0 350,240 430,0" fill="#4262b2" opacity="0.5" />
+                  <polygon points="390,240 490,0 570,240" fill="#203a7d" opacity="0.3" />
+                  <polygon points="530,0 630,240 710,0" fill="#4262b2" opacity="0.45" />
+                  <polygon points="670,240 760,0 800,240" fill="#203a7d" opacity="0.35" />
+                  <polygon points="730,0 800,180 800,0" fill="#4262b2" opacity="0.25" />
+                </svg>
+                <div id="headlineWrapper" class="relative z-10 w-full flex items-center">
+                  <h2 id="previewHeadline" class="font-poppins font-black text-left w-full leading-[1.08] select-text" style="color: #4262b2; font-size: 26px; letter-spacing: -0.025em; word-break: break-word;">
+                    Tidak Hanya Anindya Kini Aralie JKT48 Juga Perlihatkan Pose Tiga Jari
+                  </h2>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer Bar -->
+            <div id="permanentFooterBar" class="w-full mt-3.5 sm:mt-4 flex items-center justify-between text-white text-[10px] sm:text-[12px] font-bold">
+              <div id="previewBrand" class="tracking-wider uppercase font-black text-xs sm:text-sm pr-1">THEATER48+</div>
+              <div class="flex-1 mx-2 sm:mx-3 flex items-center">
+                <span class="w-2 h-2 rounded-full border-2 border-white bg-transparent flex-shrink-0"></span>
+                <span class="flex-1 h-[2px] bg-white/95"></span>
+                <span class="w-2 h-2 rounded-full border-2 border-white bg-transparent flex-shrink-0"></span>
+              </div>
+              <div id="previewFooterCta" class="font-bold tracking-tight text-right pl-1 truncate">theater48.my.id</div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div id="toast" class="fixed bottom-6 right-6 bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
+    <i class="ph-bold ph-check-circle text-lg"></i>
+    <span id="toastMsg" class="text-xs font-semibold">Berhasil</span>
+  </div>
+
+  <script>
+    let currentFormat = 'instagram';
+    let mediaType = 'image';
+    let isVideoFaded = false;
+
+    const formatModal = document.getElementById('formatModal');
+    const selectModalIg = document.getElementById('selectModalIg');
+    const selectModalTiktok = document.getElementById('selectModalTiktok');
+    const btnSwitchIg = document.getElementById('btnSwitchIg');
+    const btnSwitchTiktok = document.getElementById('btnSwitchTiktok');
+    const previewCardFrame = document.getElementById('previewCardFrame');
+    const canvasFormatBadge = document.getElementById('canvasFormatBadge');
+    const downloadBtnText = document.getElementById('downloadBtnText');
+
+    const mediaInput = document.getElementById('mediaInput');
+    const uploadLabelText = document.getElementById('uploadLabelText');
+    const bgPreviewVideo = document.getElementById('bgPreviewVideo');
+    const videoControlsPanel = document.getElementById('videoControlsPanel');
+    const videoTimeline = document.getElementById('videoTimeline');
+    const videoTimeDisplay = document.getElementById('videoTimeDisplay');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const playIcon = document.getElementById('playIcon');
+    const btnMuteVideo = document.getElementById('btnMuteVideo');
+    const muteIcon = document.getElementById('muteIcon');
+    const toggleAutoFade = document.getElementById('toggleAutoFade');
+    const fadingCaptionSection = document.getElementById('fadingCaptionSection');
+    const gradientOverlay = document.getElementById('gradientOverlay');
+
+    const tagInput = document.getElementById('tagInput');
+    const previewTag = document.getElementById('previewTag');
+    const primaryColorInput = document.getElementById('primaryColorInput');
+    const primaryColorHex = document.getElementById('primaryColorHex');
+    const solidBottomBg = document.getElementById('solidBottomBg');
+    const toggleBlueBg = document.getElementById('toggleBlueBg');
+    const labelBlueBgStatus = document.getElementById('labelBlueBgStatus');
+
+    const toggleCredit = document.getElementById('toggleCredit');
+    const creditInput = document.getElementById('creditInput');
+    const previewCreditBadge = document.getElementById('previewCreditBadge');
+    const previewCreditText = document.getElementById('previewCreditText');
+
+    // JKT48 Lineup DOM Elements
+    const toggleLineup = document.getElementById('toggleLineup');
+    const labelLineupStatus = document.getElementById('labelLineupStatus');
+    const lineupInput = document.getElementById('lineupInput');
+    const previewLineupContainer = document.getElementById('previewLineupContainer');
+
+    const headlineInput = document.getElementById('headlineInput');
+    const previewHeadline = document.getElementById('previewHeadline');
+    const captionCardBox = document.getElementById('captionCardBox');
+    const manualFontSizeInput = document.getElementById('manualFontSizeInput');
+    const manualFontSizeVal = document.getElementById('manualFontSizeVal');
+    const lineHeightSelect = document.getElementById('lineHeightSelect');
+    const textAlignSelect = document.getElementById('textAlignSelect');
+    const footerCtaInput = document.getElementById('footerCta');
+    const previewFooterCta = document.getElementById('previewFooterCta');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetSampleBtn = document.getElementById('resetSampleBtn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2500);
+    }
+
+    function setCanvasFormat(format) {
+      currentFormat = format;
+      if (format === 'tiktok') {
+        previewCardFrame.classList.remove('aspect-instagram');
+        previewCardFrame.classList.add('aspect-tiktok');
+        canvasFormatBadge.textContent = '2494 x 3324 (TikTok 3:4)';
+        downloadBtnText.textContent = mediaType === 'video' ? 'Download Video (MP4/WebM)' : 'Download TikTok PNG (3.3K)';
+        solidBottomBg.style.height = '28%';
+        btnSwitchTiktok.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-[#4262b2] text-white shadow-sm cursor-pointer";
+        btnSwitchIg.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer";
+      } else {
+        previewCardFrame.classList.remove('aspect-tiktok');
+        previewCardFrame.classList.add('aspect-instagram');
+        canvasFormatBadge.textContent = '1080 x 1080 (1:1)';
+        downloadBtnText.textContent = mediaType === 'video' ? 'Download Video (MP4/WebM)' : 'Download PNG (1080p)';
+        solidBottomBg.style.height = '38%';
+        btnSwitchIg.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-[#4262b2] text-white shadow-sm cursor-pointer";
+        btnSwitchTiktok.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer";
+      }
+      imgState.x = 0;
+      imgState.y = 0;
+      renderImageTransform();
+      updateHeadline();
+    }
+
+    selectModalIg.addEventListener('click', () => {
+      setCanvasFormat('instagram');
+      formatModal.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => formatModal.style.display = 'none', 300);
+    });
+
+    selectModalTiktok.addEventListener('click', () => {
+      setCanvasFormat('tiktok');
+      formatModal.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => formatModal.style.display = 'none', 300);
+    });
+
+    btnSwitchIg.addEventListener('click', () => { setCanvasFormat('instagram'); showToast('Format Instagram Feed (1:1)'); });
+    btnSwitchTiktok.addEventListener('click', () => { setCanvasFormat('tiktok'); showToast('Format TikTok Photo (3:4)'); });
+
+    // Update JKT48 Lineup Badges in Preview
+    function updateLineupPreview() {
+      previewLineupContainer.innerHTML = '';
+      if (!toggleLineup.checked) {
+        previewLineupContainer.classList.add('hidden');
+        return;
+      }
+      previewLineupContainer.classList.remove('hidden');
+      const names = lineupInput.value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+      names.forEach(name => {
+        const badge = document.createElement('span');
+        badge.className = 'bg-white/90 backdrop-blur-sm text-[#4262b2] font-black text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded shadow border border-white/50 uppercase tracking-tight';
+        badge.textContent = name;
+        previewLineupContainer.appendChild(badge);
+      });
+    }
+
+    lineupInput.addEventListener('input', updateLineupPreview);
+    toggleLineup.addEventListener('change', () => {
+      labelLineupStatus.textContent = toggleLineup.checked ? 'Tampilkan' : 'Sembunyikan';
+      updateLineupPreview();
+    });
+
+    // Media Upload
+    mediaInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileUrl = URL.createObjectURL(file);
+      if (file.type.startsWith('video/')) {
+        mediaType = 'video';
+        bgPreviewImg.classList.add('hidden');
+        bgPreviewVideo.classList.remove('hidden');
+        videoControlsPanel.classList.remove('hidden');
+        bgPreviewVideo.src = fileUrl;
+        bgPreviewVideo.playbackRate = 1.02;
+        bgPreviewVideo.play();
+        uploadLabelText.textContent = file.name.substring(0, 12) + '...';
+        downloadBtnText.textContent = 'Download Video (MP4/WebM)';
+      } else {
+        mediaType = 'image';
+        bgPreviewVideo.pause();
+        bgPreviewVideo.classList.add('hidden');
+        bgPreviewImg.classList.remove('hidden');
+        videoControlsPanel.classList.add('hidden');
+        bgPreviewImg.src = fileUrl;
+        uploadLabelText.textContent = 'Ganti Media';
+        downloadBtnText.textContent = currentFormat === 'tiktok' ? 'Download TikTok PNG (3.3K)' : 'Download PNG (1080p)';
+      }
+      showToast('Media berhasil dimuat!');
+    });
+
+    bgPreviewVideo.addEventListener('timeupdate', () => {
+      const cur = bgPreviewVideo.currentTime;
+      const totalDur = bgPreviewVideo.duration || 10;
+      videoTimeline.value = cur;
+      if (toggleAutoFade.checked && cur >= 5.0) {
+        if (!isVideoFaded) {
+          fadingCaptionSection.style.opacity = '0';
+          gradientOverlay.style.opacity = '0';
+          solidBottomBg.style.opacity = '0';
+          isVideoFaded = true;
+        }
+      } else if (isVideoFaded) {
+        fadingCaptionSection.style.opacity = '1';
+        gradientOverlay.style.opacity = '0.9';
+        solidBottomBg.style.opacity = '1';
+        isVideoFaded = false;
+      }
+    });
+
+    videoTimeline.addEventListener('input', (e) => {
+      if (bgPreviewVideo.duration) bgPreviewVideo.currentTime = parseFloat(e.target.value);
+    });
+
+    btnPlayPause.addEventListener('click', () => {
+      if (bgPreviewVideo.paused) {
+        bgPreviewVideo.play();
+        playIcon.className = "ph-bold ph-pause";
+      } else {
+        bgPreviewVideo.pause();
+        playIcon.className = "ph-bold ph-play";
+      }
+    });
+
+    // Image Transform State
+    let imgState = { scale: 1.0, x: 0, y: 0, mode: null, handle: null, startX: 0, startY: 0, initialScale: 1.0, initialDist: 0, anchorX: 0, anchorY: 0, initialW: 0, initialH: 0 };
+    const imageTransformBox = document.getElementById('imageTransformBox');
+    const bgLayerContainer = document.getElementById('bgLayerContainer');
+    const zoomInput = document.getElementById('zoomInput');
+    const zoomVal = document.getElementById('zoomVal');
+    const cornerHandles = document.querySelectorAll('.corner-handle');
+
+    function renderImageTransform() {
+      imageTransformBox.style.transform = `translate(calc(-50% + ${imgState.x}px), calc(-50% + ${imgState.y}px)) scale(${imgState.scale})`;
+      zoomVal.textContent = Math.round(imgState.scale * 100) + '%';
+      zoomInput.value = Math.round(imgState.scale * 100);
+    }
+
+    imageTransformBox.addEventListener('pointerdown', (e) => {
+      if (e.target.classList.contains('corner-handle')) return;
+      imgState.mode = 'drag';
+      imgState.startX = e.clientX - imgState.x;
+      imgState.startY = e.clientY - imgState.y;
+      imageTransformBox.setPointerCapture(e.pointerId);
+    });
+
+    cornerHandles.forEach(handle => {
+      handle.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        imgState.mode = 'resize';
+        imgState.handle = handle.dataset.handle;
+        const boxRect = imageTransformBox.getBoundingClientRect();
+        if (imgState.handle === 'bottom-right') { imgState.anchorX = boxRect.left; imgState.anchorY = boxRect.top; }
+        else if (imgState.handle === 'bottom-left') { imgState.anchorX = boxRect.right; imgState.anchorY = boxRect.top; }
+        else if (imgState.handle === 'top-right') { imgState.anchorX = boxRect.left; imgState.anchorY = boxRect.bottom; }
+        else if (imgState.handle === 'top-left') { imgState.anchorX = boxRect.right; imgState.anchorY = boxRect.bottom; }
+        imgState.initialScale = imgState.scale;
+        imgState.initialDist = Math.hypot(e.clientX - imgState.anchorX, e.clientY - imgState.anchorY);
+        imgState.initialW = boxRect.width;
+        imgState.initialH = boxRect.height;
+        handle.setPointerCapture(e.pointerId);
+      });
+      handle.addEventListener('pointermove', (e) => {
+        if (imgState.mode !== 'resize') return;
+        const currentDist = Math.hypot(e.clientX - imgState.anchorX, e.clientY - imgState.anchorY);
+        if (imgState.initialDist > 5) {
+          const ratio = currentDist / imgState.initialDist;
+          const newScale = Math.min(Math.max(imgState.initialScale * ratio, 0.2), 4.0);
+          const actualRatio = newScale / imgState.initialScale;
+          const newW = imgState.initialW * actualRatio;
+          const newH = imgState.initialH * actualRatio;
+          let newCenterX = 0, newCenterY = 0;
+          if (imgState.handle === 'bottom-right') { newCenterX = imgState.anchorX + newW / 2; newCenterY = imgState.anchorY + newH / 2; }
+          else if (imgState.handle === 'bottom-left') { newCenterX = imgState.anchorX - newW / 2; newCenterY = imgState.anchorY + newH / 2; }
+          else if (imgState.handle === 'top-right') { newCenterX = imgState.anchorX + newW / 2; newCenterY = imgState.anchorY - newH / 2; }
+          else if (imgState.handle === 'top-left') { newCenterX = imgState.anchorX - newW / 2; newCenterY = imgState.anchorY - newH / 2; }
+          const containerRect = bgLayerContainer.getBoundingClientRect();
+          imgState.x = newCenterX - (containerRect.left + containerRect.width / 2);
+          imgState.y = newCenterY - (containerRect.top + containerRect.height / 2);
+          imgState.scale = newScale;
+          renderImageTransform();
+        }
+      });
+      handle.addEventListener('pointerup', (e) => { imgState.mode = null; handle.releasePointerCapture(e.pointerId); });
+    });
+
+    imageTransformBox.addEventListener('pointermove', (e) => {
+      if (imgState.mode === 'drag') {
+        imgState.x = e.clientX - imgState.startX;
+        imgState.y = e.clientY - imgState.startY;
+        renderImageTransform();
+      }
+    });
+    imageTransformBox.addEventListener('pointerup', () => { imgState.mode = null; });
+
+    zoomInput.addEventListener('input', (e) => {
+      imgState.scale = parseFloat(e.target.value) / 100;
+      renderImageTransform();
+    });
+
+    document.getElementById('resetTransformBtn').addEventListener('click', () => {
+      imgState.x = 0; imgState.y = 0; imgState.scale = 1.0;
+      renderImageTransform();
+      showToast('Posisi di-reset');
+    });
+
+    function updateHeadline() {
+      previewHeadline.textContent = headlineInput.value || 'Ketik Judul Berita Di Sini';
+      previewHeadline.style.fontSize = `${manualFontSizeInput.value}px`;
+    }
+
+    headlineInput.addEventListener('input', updateHeadline);
+    manualFontSizeInput.addEventListener('input', (e) => { manualFontSizeVal.textContent = `${e.target.value}px`; updateHeadline(); });
+    lineHeightSelect.addEventListener('change', (e) => { previewHeadline.style.lineHeight = e.target.value; });
+    textAlignSelect.addEventListener('change', (e) => { previewHeadline.style.textAlign = e.target.value; });
+
+    tagInput.addEventListener('input', () => { previewTag.textContent = tagInput.value || 'TAG'; });
+    creditInput.addEventListener('input', () => { previewCreditText.textContent = creditInput.value || 'Sumber: Twitter/X'; });
+    toggleCredit.addEventListener('change', () => { previewCreditBadge.classList.toggle('hidden', !toggleCredit.checked); });
+    toggleBlueBg.addEventListener('change', () => {
+      const active = toggleBlueBg.checked;
+      labelBlueBgStatus.textContent = active ? 'Aktif' : 'Mati';
+      solidBottomBg.classList.toggle('hidden', !active);
+      gradientOverlay.classList.toggle('hidden', !active);
+    });
+
+    function applyPrimaryColor(color) {
+      previewHeadline.style.color = color;
+      previewTag.style.color = color;
+      solidBottomBg.style.backgroundColor = color;
+      primaryColorHex.value = color.toUpperCase();
+      primaryColorInput.value = color;
+    }
+    primaryColorInput.addEventListener('input', (e) => applyPrimaryColor(e.target.value));
+
+    // Render Canvas Frame for Export (PNG or Video)
+    const captureArea = document.getElementById('captureArea');
+    function renderFrame(ctx, targetW, targetH, isTiktok, overlayOpacity = 1.0) {
+      const rect = captureArea.getBoundingClientRect();
+      const scaleFactor = targetW / rect.width;
+
+      ctx.save();
+      ctx.fillStyle = '#192b52';
+      ctx.fillRect(0, 0, targetW, targetH);
+
+      const currentMedia = mediaType === 'video' ? bgPreviewVideo : bgPreviewImg;
+      const mediaW = mediaType === 'video' ? bgPreviewVideo.videoWidth : bgPreviewImg.naturalWidth;
+      const mediaH = mediaType === 'video' ? bgPreviewVideo.videoHeight : bgPreviewImg.naturalHeight;
+
+      if (mediaW > 0 && mediaH > 0) {
+        ctx.save();
+        const mediaAspect = mediaW / mediaH;
+        const containerAspect = rect.width / rect.height;
+        let baseW, baseH;
+        if (mediaAspect > containerAspect) { baseH = targetH; baseW = targetH * mediaAspect; }
+        else { baseW = targetW; baseH = targetW / mediaAspect; }
+        ctx.translate((targetW / 2) + (imgState.x * scaleFactor), (targetH / 2) + (imgState.y * scaleFactor));
+        ctx.scale(imgState.scale, imgState.scale);
+        ctx.drawImage(currentMedia, -baseW / 2, -baseH / 2, baseW, baseH);
+        ctx.restore();
+      }
+
+      const footerDom = document.getElementById('permanentFooterBar');
+      const footerRect = footerDom.getBoundingClientRect();
+      const cardRect = captionCardBox.getBoundingClientRect();
+      const tagRect = previewTag.getBoundingClientRect();
+      const creditRect = toggleCredit.checked ? previewCreditBadge.getBoundingClientRect() : null;
+      const lineupRect = toggleLineup.checked ? previewLineupContainer.getBoundingClientRect() : null;
+
+      const boxX = (cardRect.left - rect.left) * scaleFactor;
+      const boxY = (cardRect.top - rect.top) * scaleFactor;
+      const boxW = cardRect.width * scaleFactor;
+      const boxH = cardRect.height * scaleFactor;
+
+      if (overlayOpacity > 0.001) {
+        ctx.save();
+        ctx.globalAlpha = overlayOpacity;
+
+        if (toggleBlueBg.checked) {
+          const solidRect = solidBottomBg.getBoundingClientRect();
+          const solidH = solidRect.height * scaleFactor;
+          const solidY = (solidRect.top - rect.top) * scaleFactor;
+          const gradH = targetH * (isTiktok ? 0.35 : 0.32);
+          const gradYStart = Math.max(0, solidY - gradH);
+          const grad = ctx.createLinearGradient(0, gradYStart, 0, solidY);
+          grad.addColorStop(0, 'rgba(66, 98, 178, 0)');
+          grad.addColorStop(1, '#4262b2');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, gradYStart, targetW, solidY - gradYStart);
+          ctx.fillStyle = primaryColorInput.value || '#4262b2';
+          ctx.fillRect(0, solidY, targetW, solidH);
+        }
+
+        // Tag Badge
+        const tagText = (tagInput.value || 'JKT48').toUpperCase();
+        const tagX = (tagRect.left - rect.left) * scaleFactor;
+        const tagY = (tagRect.top - rect.top) * scaleFactor;
+        const tagWidth = tagRect.width * scaleFactor;
+        const tagHeight = tagRect.height * scaleFactor;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 7 * scaleFactor);
+        ctx.fill();
+        ctx.font = `900 ${Math.round(13 * scaleFactor)}px Poppins, sans-serif`;
+        ctx.fillStyle = primaryColorInput.value || '#4262b2';
+        ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+        ctx.fillText(tagText, tagX + tagWidth / 2, tagY + tagHeight / 2);
+
+        // Credit Badge
+        if (toggleCredit.checked && creditRect) {
+          const creditStr = (creditInput.value || 'Sumber: Twitter/X').toUpperCase();
+          const creditX = (creditRect.left - rect.left) * scaleFactor;
+          const creditY = (creditRect.top - rect.top) * scaleFactor;
+          const creditW = creditRect.width * scaleFactor;
+          const creditH = creditRect.height * scaleFactor;
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+          ctx.beginPath();
+          ctx.roundRect(creditX, creditY, creditW, creditH, 7 * scaleFactor);
+          ctx.fill();
+          ctx.font = `700 ${Math.round(11 * scaleFactor)}px Poppins, sans-serif`;
+          ctx.fillStyle = '#ffffff';
+          ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+          ctx.fillText(creditStr, creditX + creditW / 2, creditY + creditH / 2);
+        }
+
+        // Render JKT48 Lineup Badges on Canvas
+        if (toggleLineup.checked && lineupRect) {
+          const names = lineupInput.value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+          const lineupDomBadges = previewLineupContainer.children;
+          for (let i = 0; i < names.length && i < lineupDomBadges.length; i++) {
+            const badgeEl = lineupDomBadges[i];
+            const bRect = badgeEl.getBoundingClientRect();
+            const bX = (bRect.left - rect.left) * scaleFactor;
+            const bY = (bRect.top - rect.top) * scaleFactor;
+            const bW = bRect.width * scaleFactor;
+            const bH = bRect.height * scaleFactor;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.roundRect(bX, bY, bW, bH, 6 * scaleFactor);
+            ctx.fill();
+
+            ctx.font = `900 ${Math.round(11 * scaleFactor)}px Poppins, sans-serif`;
+            ctx.fillStyle = primaryColorInput.value || '#4262b2';
+            ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+            ctx.fillText(names[i].toUpperCase(), bX + bW / 2, bY + bH / 2);
+          }
+        }
+
+        // Caption Box
+        ctx.fillStyle = '#f7f9fd';
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 3.2 * scaleFactor;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+        // Headline Text
+        const computedHeadline = window.getComputedStyle(previewHeadline);
+        const headlineFontSize = Math.round(parseFloat(computedHeadline.fontSize) * scaleFactor);
+        const headlineLineHeight = headlineFontSize * (parseFloat(lineHeightSelect.value) || 1.14);
+        ctx.font = `900 ${headlineFontSize}px Poppins, sans-serif`;
+        
+        const words = (headlineInput.value || '').split(' ');
+        const lines = [];
+        let currentLine = '';
+        const headlineRect = previewHeadline.getBoundingClientRect();
+        const textPadX = Math.round((headlineRect.left - captionCardBox.getBoundingClientRect().left) * scaleFactor);
+        const maxTextW = boxW - (textPadX * 2);
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+          if (ctx.measureText(testLine).width > maxTextW && i > 0) {
+            lines.push(currentLine); currentLine = words[i];
+          } else { currentLine = testLine; }
+        }
+        lines.push(currentLine);
+
+        const textTotalH = (lines.length - 1) * headlineLineHeight + headlineFontSize;
+        const textStartY = boxY + ((boxH - textTotalH) / 2) + (headlineFontSize * 0.84);
+        ctx.fillStyle = primaryColorInput.value || '#4262b2';
+        ctx.textAlign = textAlignSelect.value === 'center' ? 'center' : 'left';
+        const textTargetX = textAlignSelect.value === 'center' ? (boxX + boxW / 2) : (boxX + textPadX);
+
+        lines.forEach((line, idx) => {
+          ctx.fillText(line, textTargetX, textStartY + (idx * headlineLineHeight));
+        });
+
+        ctx.restore();
+      }
+
+      // Footer
+      const footY = (footerRect.top - rect.top) * scaleFactor;
+      const footH = footerRect.height * scaleFactor;
+      const footBaselineY = footY + (footH / 2);
+      ctx.font = `900 ${Math.round(13 * scaleFactor)}px Poppins, sans-serif`;
+      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText('THEATER48+', boxX, footBaselineY);
+      const brandW = ctx.measureText('THEATER48+').width;
+
+      ctx.font = `700 ${Math.round(11 * scaleFactor)}px Poppins, sans-serif`;
+      ctx.textAlign = 'right';
+      const ctaText = footerCtaInput.value || 'theater48.my.id';
+      ctx.fillText(ctaText, boxX + boxW, footBaselineY);
+      const ctaW = ctx.measureText(ctaText).width;
+
+      const lineStartX = boxX + brandW + (12 * scaleFactor);
+      const lineEndX = (boxX + boxW) - ctaW - (12 * scaleFactor);
+      if (lineEndX > lineStartX + 20) {
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2 * scaleFactor;
+        ctx.beginPath(); ctx.arc(lineStartX, footBaselineY, 3.5 * scaleFactor, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lineStartX + 6, footBaselineY); ctx.lineTo(lineEndX - 6, footBaselineY); ctx.stroke();
+        ctx.beginPath(); ctx.arc(lineEndX, footBaselineY, 3.5 * scaleFactor, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // Download Button
+    downloadBtn.addEventListener('click', async () => {
+      const isTiktok = currentFormat === 'tiktok';
+      await document.fonts.ready;
+      const targetW = isTiktok ? 2494 : 1080;
+      const targetH = isTiktok ? 3324 : 1080;
+
+      downloadBtn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i><span>Merender...</span>`;
+      downloadBtn.disabled = true;
+
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = targetW; canvas.height = targetH;
+        const ctx = canvas.getContext('2d');
+        renderFrame(ctx, targetW, targetH, isTiktok, 1.0);
+
+        const a = document.createElement('a');
+        a.download = `theater48_${tagInput.value.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.png`;
+        a.href = canvas.toDataURL('image/png', 1.0);
+        a.click();
+        showToast('Gambar berhasil di-download!');
+      } catch (err) {
+        console.error(err);
+        showToast('Gagal merender gambar.');
+      } finally {
+        downloadBtn.innerHTML = `<i class="ph-bold ph-download-simple text-base"></i><span id="downloadBtnText">Download PNG (1080p)</span>`;
+        downloadBtn.disabled = false;
+      }
+    });
+
+    document.fonts.ready.then(() => {
+      updateLineupPreview();
+      updateHeadline();
+      renderImageTransform();
+    });
+  </script>
+</body>
+</html>
