@@ -121,7 +121,7 @@
         </div>
       </div>
 
-      <!-- Text & JKT48 Lineup Panel -->
+      <!-- Text & Lineup Panel -->
       <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 shadow-sm space-y-3.5">
         
         <div class="grid grid-cols-2 gap-3">
@@ -150,6 +150,20 @@
             </label>
           </div>
           <input type="text" id="lineupInput" value="Gita, Freya, Gracia, Marsha, Christy" placeholder="Pisahkan dengan koma..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#4262b2]">
+        </div>
+
+        <!-- DATE & TIME FEATURE -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="ph-bold ph-calendar text-[#4262b2]"></i> Tanggal & Waktu
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="toggleDateTime" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
+              <span id="labelDateTimeStatus" class="text-[11px] font-semibold text-blue-300">Tampilkan</span>
+            </label>
+          </div>
+          <input type="text" id="dateTimeInput" value="Rabu, 12 November 2026 | 19:00 WIB" placeholder="Contoh: Rabu, 12 Nov 2026..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#4262b2]">
         </div>
 
         <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
@@ -240,7 +254,7 @@
           <div id="newsOverlayGroup" class="relative z-20 w-full px-5 pb-5 sm:px-7 sm:pb-6 flex flex-col justify-end pointer-events-none">
             <div id="fadingCaptionSection" class="w-full flex flex-col justify-end pointer-events-auto transition-opacity duration-700">
               
-              <!-- Meta Badges & JKT48 Lineup Row -->
+              <!-- Meta Badges -->
               <div id="metaRowContainer" class="w-full mb-1.5 flex items-center justify-between">
                 <span id="previewTag" class="inline-block bg-white text-[#4262b2] font-black tracking-tight text-xs sm:text-[13px] px-3.5 py-0.5 sm:py-1 rounded-md shadow-md border border-white/80 uppercase">JKT48</span>
                 <div id="previewCreditBadge" class="bg-black/60 backdrop-blur-sm border border-white/30 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-0.5 sm:py-1 rounded-md shadow-md flex items-center gap-1.5 uppercase tracking-wide">
@@ -252,6 +266,11 @@
               <!-- Lineup Member Row Preview -->
               <div id="previewLineupContainer" class="w-full mb-1.5 flex flex-wrap gap-1.5 items-center">
                 <!-- Lineup badges injected via JS -->
+              </div>
+
+              <!-- Date & Time Preview Badge -->
+              <div id="previewDateTimeContainer" class="w-full mb-1.5 flex items-center">
+                <span id="previewDateTimeText" class="bg-black/50 backdrop-blur-sm text-slate-200 font-semibold text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded shadow border border-white/20 tracking-wide">Rabu, 12 November 2026 | 19:00 WIB</span>
               </div>
 
               <!-- Caption Box -->
@@ -346,6 +365,13 @@
     const lineupInput = document.getElementById('lineupInput');
     const previewLineupContainer = document.getElementById('previewLineupContainer');
 
+    // Date & Time DOM Elements
+    const toggleDateTime = document.getElementById('toggleDateTime');
+    const labelDateTimeStatus = document.getElementById('labelDateTimeStatus');
+    const dateTimeInput = document.getElementById('dateTimeInput');
+    const previewDateTimeContainer = document.getElementById('previewDateTimeContainer');
+    const previewDateTimeText = document.getElementById('previewDateTimeText');
+
     const headlineInput = document.getElementById('headlineInput');
     const previewHeadline = document.getElementById('previewHeadline');
     const captionCardBox = document.getElementById('captionCardBox');
@@ -427,6 +453,22 @@
     toggleLineup.addEventListener('change', () => {
       labelLineupStatus.textContent = toggleLineup.checked ? 'Tampilkan' : 'Sembunyikan';
       updateLineupPreview();
+    });
+
+    // Update Date & Time Preview
+    function updateDateTimePreview() {
+      if (!toggleDateTime.checked) {
+        previewDateTimeContainer.classList.add('hidden');
+        return;
+      }
+      previewDateTimeContainer.classList.remove('hidden');
+      previewDateTimeText.textContent = dateTimeInput.value || 'Rabu, 12 November 2026 | 19:00 WIB';
+    }
+
+    dateTimeInput.addEventListener('input', updateDateTimePreview);
+    toggleDateTime.addEventListener('change', () => {
+      labelDateTimeStatus.textContent = toggleDateTime.checked ? 'Tampilkan' : 'Sembunyikan';
+      updateDateTimePreview();
     });
 
     // Media Upload
@@ -715,6 +757,29 @@
           }
         }
 
+        // Render Date & Time Badge on Canvas
+        const dateTimeRect = toggleDateTime.checked ? previewDateTimeContainer.getBoundingClientRect() : null;
+        if (toggleDateTime.checked && dateTimeRect) {
+          const dtX = (dateTimeRect.left - rect.left) * scaleFactor;
+          const dtY = (dateTimeRect.top - rect.top) * scaleFactor;
+          const dtW = dateTimeRect.width * scaleFactor;
+          const dtH = dateTimeRect.height * scaleFactor;
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.beginPath();
+          ctx.roundRect(dtX, dtY, dtW, dtH, 6 * scaleFactor);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.lineWidth = 1 * scaleFactor;
+          ctx.stroke();
+
+          ctx.font = `600 ${Math.round(11 * scaleFactor)}px Poppins, sans-serif`;
+          ctx.fillStyle = '#e2e8f0';
+          ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+          ctx.fillText(dateTimeInput.value || 'Rabu, 12 November 2026 | 19:00 WIB', dtX + dtW / 2, dtY + dtH / 2);
+        }
+
         // Caption Box
         ctx.fillStyle = '#f7f9fd';
         ctx.fillRect(boxX, boxY, boxW, boxH);
@@ -815,6 +880,7 @@
 
     document.fonts.ready.then(() => {
       updateLineupPreview();
+      updateDateTimePreview();
       updateHeadline();
       renderImageTransform();
     });
